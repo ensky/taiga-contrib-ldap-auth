@@ -18,7 +18,6 @@ from django.db import transaction as tx
 from django.apps import apps
 
 from taiga.base.utils.slug import slugify_uniquely
-from taiga.base import response
 from taiga.auth.services import make_auth_response_data
 from taiga.auth.signals import user_registered as user_registered_signal
 
@@ -58,4 +57,4 @@ def ldap_login_func(request):
     email, full_name = connector.login(username=username, password=password)
     user = ldap_register(username=username, email=email, full_name=full_name)
     data = make_auth_response_data(user)
-    return response.Ok(data)
+    return data
