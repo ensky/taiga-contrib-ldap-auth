@@ -1,8 +1,6 @@
 Taiga contrib ldap auth
 =======================
 
-*WARNING*: Not ready yet, will be usable after the Taiga 1.6.0 version.
-
 The Taiga plugin for ldap authentication.
 
 Installation
