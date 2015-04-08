@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, AUTH_SIMPLE, STRATEGY_SYNC
+from ldap3 import Server, Connection, AUTH_SIMPLE, STRATEGY_SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, ALL
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
@@ -26,21 +26,46 @@ class LDAPLoginError(ConnectorBaseException):
 
 
 SERVER = getattr(settings, "LDAP_SERVER", "")
-DN_FORMAT = getattr(settings, "LDAP_DN_FORMAT", "")
-BASE_EMAIL = getattr(settings, "LDAP_BASE_EMAIL", "")
+PORT = getattr(settings, "LDAP_PORT", "")
 
+SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
+SEARCH_PROPERTY = getattr(settings, "LDAP_SEARCH_PROPERTY", "")
+BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
+BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
+
+EMAIL_PROPERTY = getattr(settings, "LDAP_EMAIL_PROPERTY", "")
+FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 
 def login(username: str, password: str) -> tuple:
-    dn = DN_FORMAT.format(username=username)
-    try:
-        server = Server(SERVER)
-        Connection(server, auto_bind=True, client_strategy=STRATEGY_SYNC,
-                   user=dn, password=password, authentication=AUTH_SIMPLE,
-                   check_names=True)
-    except:
-        raise LDAPLoginError({"error_message": "LDAP account or password incorrect."})
 
-    # TODO: fetch email and fullname information from LDAP server
-    email = username + BASE_EMAIL
-    full_name = username
-    return (email, full_name)
+
+    try:
+        server = Server(SERVER, port = PORT, get_info = ALL)  # define an unsecure LDAP server, requesting info on DSE and schema
+        c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=SIMPLE, check_names=True)
+
+    except Exception as e:
+        error = "Error connecting to LDAP server: %s" % e
+        raise LDAPLoginError({"error_message": error})
+
+    try:
+        c.search(search_base = SEARCH_BASE,
+                 search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username),
+                 search_scope = SUBTREE,
+                 attributes = [EMAIL_PROPERTY,FULL_NAME_PROPERTY],
+                 paged_size = 5)
+
+        if len(c.response) > 0:
+            dn = c.response[0].get('dn')
+            user_email = c.response[0].get('raw_attributes').get(EMAIL_PROPERTY)[0].decode('utf-8')
+            full_name = c.response[0].get('raw_attributes').get(FULL_NAME_PROPERTY)[0].decode('utf-8')
+
+            user_conn = Connection(server, auto_bind = True, client_strategy = SYNC, user = dn, password = password, authentication = SIMPLE, check_names = True)
+
+            # TODO: fetch email and fullname information from LDAP server
+            return (user_email, full_name)
+
+        raise LDAPLoginError({"error_message": "Username or password incorrect"})
+
+    except Exception as e:
+        error = "LDAP account or password incorrect: %s" % e
+        raise LDAPLoginError({"error_message": error})
