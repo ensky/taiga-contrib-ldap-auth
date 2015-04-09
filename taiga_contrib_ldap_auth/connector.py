@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, AUTH_SIMPLE, STRATEGY_SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, ALL
+from ldap3 import Server, Connection, AUTH_SIMPLE, AUTH_ANONYMOUS, STRATEGY_SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, ALL
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
@@ -41,7 +41,12 @@ def login(username: str, password: str) -> tuple:
 
     try:
         server = Server(SERVER, port = PORT, get_info = ALL)  # define an unsecure LDAP server, requesting info on DSE and schema
-        c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=SIMPLE, check_names=True)
+        c = None
+
+        if BIND_DN is not None and BIND_DN != '':
+            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=AUTH_SIMPLE, check_names=True)
+        else:
+            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=None, password=None, authentication=AUTH_ANONYMOUS, check_names=True)
 
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
