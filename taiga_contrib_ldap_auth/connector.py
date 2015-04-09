@@ -66,7 +66,6 @@ def login(username: str, password: str) -> tuple:
 
             user_conn = Connection(server, auto_bind = True, client_strategy = SYNC, user = dn, password = password, authentication = SIMPLE, check_names = True)
 
-            # TODO: fetch email and fullname information from LDAP server
             return (user_email, full_name)
 
         raise LDAPLoginError({"error_message": "Username or password incorrect"})
