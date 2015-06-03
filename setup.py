@@ -18,6 +18,7 @@ setup(
     packages = find_packages(),
     install_requires=[
         'django >= 1.7',
+		'ldap3 >= 0.9.8.4'
     ],
     setup_requires = [
         'versiontools >= 1.8',
