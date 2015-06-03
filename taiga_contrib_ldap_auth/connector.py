@@ -30,6 +30,7 @@ PORT = getattr(settings, "LDAP_PORT", "")
 
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
 SEARCH_PROPERTY = getattr(settings, "LDAP_SEARCH_PROPERTY", "")
+SEARCH_SUFFIX = getattr(settings, "LDAP_SEARCH_SUFFIX", "")
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 
@@ -37,7 +38,6 @@ EMAIL_PROPERTY = getattr(settings, "LDAP_EMAIL_PROPERTY", "")
 FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 
 def login(username: str, password: str) -> tuple:
-
 
     try:
         server = Server(SERVER, port = PORT, get_info = ALL)  # define an unsecure LDAP server, requesting info on DSE and schema
@@ -53,8 +53,12 @@ def login(username: str, password: str) -> tuple:
         raise LDAPLoginError({"error_message": error})
 
     try:
+        if(SEARCH_SUFFIX is not None and SEARCH_SUFFIX != ''):
+            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username + SEARCH_SUFFIX)
+        else:
+            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username)
         c.search(search_base = SEARCH_BASE,
-                 search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username),
+                 search_filter = search_filter,
                  search_scope = SUBTREE,
                  attributes = [EMAIL_PROPERTY,FULL_NAME_PROPERTY],
                  paged_size = 5)

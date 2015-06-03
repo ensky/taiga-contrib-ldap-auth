@@ -32,6 +32,7 @@ LDAP configuration:
   LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
   # LDAP property used for searching, ie. login username needs to match value in sAMAccountName property in LDAP
   LDAP_SEARCH_PROPERTY = 'sAMAccountName'
+  LDAP_SEARCH_SUFFIX = None # '@example.com'
 
   # Names of LDAP properties on user account to get email and full name
   LDAP_EMAIL_PROPERTY = 'mail'
@@ -41,6 +42,8 @@ LDAP configuration:
 The logic of the code is such that a dedicated domain service account user performs a search on LDAP for an account that has a LDAP_SEARCH_PROPERTY value that matches the username the user typed in on the Taiga login form.  
 If the search is successful, then the code uses this value and the typed-in password to attempt a bind to LDAP using these credentials.
 If the bind is successful, then we can say that the user is authorised to log in to Taiga.
+
+Optionally LDAP_SEARCH_SUFFIX can be set to allow for the search to match only the beginning of a field containing e.g. an email address.
 
 If the LDAP_BIND_DN configuration setting is not specified or is blank, then an anonymous bind is attempted to search for the login user's LDAP account entry.
 
