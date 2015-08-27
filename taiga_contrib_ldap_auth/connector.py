@@ -40,7 +40,7 @@ FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 def login(username: str, password: str) -> tuple:
 
     try:
-        if SERVER.startswith("ldaps://"):
+        if SERVER.lower().startswith("ldaps://"):
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True) 
         else:
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = False)  # define an unsecure LDAP server, requesting info on DSE and schema
