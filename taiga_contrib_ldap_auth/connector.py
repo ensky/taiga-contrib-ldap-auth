@@ -31,6 +31,7 @@ PORT = getattr(settings, "LDAP_PORT", "")
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
 SEARCH_PROPERTY = getattr(settings, "LDAP_SEARCH_PROPERTY", "")
 SEARCH_SUFFIX = getattr(settings, "LDAP_SEARCH_SUFFIX", "")
+SEARCH_FILTER = getattr(settings, "LDAP_SEARCH_FILTER", "")
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 
@@ -61,6 +62,8 @@ def login(username: str, password: str) -> tuple:
             search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username + SEARCH_SUFFIX)
         else:
             search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username)
+        if SEARCH_FILTER:
+            search_filter = '(&%s(%s))' % (search_filter, SEARCH_FILTER)
         c.search(search_base = SEARCH_BASE,
                  search_filter = search_filter,
                  search_scope = SUBTREE,
