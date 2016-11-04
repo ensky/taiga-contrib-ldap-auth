@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, AUTH_SIMPLE, AUTH_ANONYMOUS, STRATEGY_SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, NONE
+from ldap3 import Server, Connection, SIMPLE, ANONYMOUS, SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, NONE
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
@@ -48,9 +48,9 @@ def login(username: str, password: str) -> tuple:
         c = None
 
         if BIND_DN is not None and BIND_DN != '':
-            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=AUTH_SIMPLE, check_names=True)
+            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=SIMPLE, check_names=True)
         else:
-            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=None, password=None, authentication=AUTH_ANONYMOUS, check_names=True)
+            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=None, password=None, authentication=ANONYMOUS, check_names=True)
 
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
